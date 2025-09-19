@@ -1,12 +1,8 @@
 {
   "name": "backend",
   "version": "1.0.0",
-<<<<<<< HEAD
-  "type":"module",
-=======
   "type": "module",
   "description": "",
->>>>>>> dev
   "main": "backend.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -15,10 +11,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-<<<<<<< HEAD
-  "description": "",
-=======
->>>>>>> dev
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^5.1.0"

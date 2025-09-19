@@ -31,9 +31,10 @@
     <!-- Barra de búsqueda -->
     <section class="py-4 bg-light">
       <div class="container">
-        <form class="row g-3">
+        <div class="row g-3">
           <div class="col-md-6">
             <input
+              id="searchMovieToken"
               type="text"
               class="form-control"
               placeholder="Buscar por título o director..."
@@ -45,11 +46,11 @@
             </select>
           </div>
           <div class="col-md-2 d-grid">
-            <button class="btn btn-primary" type="submit">
+            <button id="search-movies-btn" class="btn btn-primary">
               Buscar
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </section>
 

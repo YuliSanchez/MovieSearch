@@ -1,14 +1,6 @@
 //import express from "express";
 //const express = require("express");
 //const cors = require("cors");
-<<<<<<< HEAD
-import express from "express";
-import cors from "cors"
-import { readFileSync } from "fs";
-const movies = JSON.parse(
-  readFileSync(new URL("./data/movies.json", import.meta.url), "utf-8")
-);
-=======
 //const movies = require("movies.js");
 import express from "express";
 import cors from "cors"; 
@@ -16,7 +8,6 @@ import {readFileSync} from "fs";
 const moviesdb = JSON.parse(
     readFileSync(new URL("./data/movies.json", import.meta.url), "utf-8"));
 
->>>>>>> dev
 const app = express();
 const PORT = 4000; // backend corre en otro puerto
 
@@ -24,39 +15,62 @@ const PORT = 4000; // backend corre en otro puerto
 app.use(express.json());
 app.use(cors());
 // Endpoint de prueba
-<<<<<<< HEAD
-/**
- * req => request
- * res => response
- */
-app.get("/api/products", (req, res) => {
-    console.log(res.originalUrl);
-    console.log("hola mundo");
-    res.json(movies);
-=======
 /** req => request
  *  res => respuesta
  */
 app.get("/api/products", (req, res) => {
-    console.log(res.originalUrl);
-    console.log("Hola mundo");
 
   res.json(moviesdb);
 });
 
 app.get("/api/gendermoviecatalog", (req, res) => {
-  console.log("Gender Movies Catalog");
   const generosUnicos = [...new Set(moviesdb.map(p => p.genre))];
-  console.log(generosUnicos);
 
   res.json(generosUnicos);
->>>>>>> dev
+});
+
+app.get("/api/movies", (req, res) => {
+  try {
+    // ... lógica
+    let { search = "", genre = "Todos los generos", page = 1, limit = 5 } = req.query;
+  search = search.toLowerCase();
+  page = parseInt(page);
+  limit = parseInt(limit);
+
+  let filtered = moviesdb.filter(m =>
+    m.title.toLowerCase().includes(search) ||
+    m.director.toLowerCase().includes(search)
+  );
+
+   // Filtrar por género
+  if (genre !== "Todos los generos") {
+    filtered = filtered.filter(m => m.genre === genre);
+  }
+
+   // Total antes de paginar
+  const total = filtered.length;
+
+  // Paginado
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const paginated = filtered.slice(start, end);
+  var result = {
+    "total":total,
+    "page":page,
+    "limit":limit,
+    "totalPages": Math.ceil(total / limit),
+    "data": paginated
+  };
+ 
+  console.log(result);
+  res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+  
 });
 
 app.listen(PORT, () => {
   console.log(`Servidor backend corriendo en http://localhost:${PORT}`);
-<<<<<<< HEAD
 });
-=======
-});
->>>>>>> dev

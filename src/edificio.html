@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mock - Edificio interactivo</title>
+<style>
+  :root{
+    --accent:#0f6cf2;
+    --muted:#e9eef9;
+    --card:#ffffff;
+    --glass: rgba(255,255,255,0.06);
+  }
+
+  body{
+    font-family: Inter, system-ui, Arial, sans-serif;
+    background: linear-gradient(180deg,#f6f9ff 0%, #eef4ff 100%);
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+
+  .stage{
+    display:flex;
+    gap:28px;
+    align-items:flex-start;
+    max-width:980px;
+    width:100%;
+  }
+
+  /* Building card */
+  .building-wrap{
+    width:360px;
+    background:linear-gradient(180deg,#ffffff 0%, #f7fbff 100%);
+    border-radius:16px;
+    box-shadow: 0 10px 30px rgba(12,35,80,0.08);
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .building {
+    width:300px;
+    border-radius:10px;
+    overflow:hidden;
+    background: linear-gradient(180deg,#dfeeff 0%, #d4e9ff 100%);
+    box-shadow: inset 0 10px 20px rgba(255,255,255,0.2);
+    padding:8px;
+    display:flex;
+    flex-direction:column-reverse; /* floors bottom-up */
+  }
+
+  .floor {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:12px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    cursor:pointer;
+    transition: transform .18s ease, box-shadow .18s ease;
+    position:relative;
+  }
+
+  .floor:hover{
+    transform: translateY(-6px);
+  }
+
+  .floor .floor-left{
+    width:68px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+  }
+
+  .floor .badge {
+    background:var(--card);
+    padding:6px 8px;
+    border-radius:8px;
+    font-weight:600;
+    box-shadow: 0 6px 16px rgba(12,35,80,0.06);
+    font-size:13px;
+  }
+
+  .floor .units {
+    flex:1;
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+  }
+
+  /* representation of apartments on the floor */
+  .apt {
+    width:42px;
+    height:34px;
+    border-radius:6px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,250,255,0.6));
+    border:1px solid rgba(12,35,80,0.06);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    color:#1d3557;
+    box-shadow: 0 6px 14px rgba(12,35,80,0.04);
+  }
+
+  .floor .floor-meta{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background:var(--accent);
+    opacity:0.95;
+    box-shadow: 0 6px 10px rgba(15,108,242,0.18);
+  }
+
+  /* Right-side detail panel */
+  .detail {
+    flex:1;
+    min-height:320px;
+    background: linear-gradient(180deg,#fff 0%, #fcfeff 100%);
+    border-radius:14px;
+    padding:18px;
+    box-shadow: 0 8px 30px rgba(12,35,80,0.06);
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .detail .title {
+    font-size:18px;
+    font-weight:700;
+    color:#06204a;
+  }
+
+  .detail .subtitle {
+    color:#4b5b7a;
+    font-size:13px;
+    margin-bottom:8px;
+  }
+
+  .detail .card {
+    background:var(--muted);
+    border-radius:10px;
+    padding:12px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+
+  .pill {
+    display:inline-block;
+    padding:8px 12px;
+    border-radius:999px;
+    background:var(--card);
+    box-shadow: 0 8px 18px rgba(12,35,80,0.06);
+    font-weight:700;
+  }
+
+  /* small CTA */
+  .cta {
+    margin-top:auto;
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+
+  .btn {
+    background:var(--accent);
+    color:white;
+    border:none;
+    padding:10px 14px;
+    border-radius:10px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow: 0 8px 20px rgba(15,108,242,0.18);
+  }
+
+  .btn.secondary {
+    background:transparent;
+    color:var(--accent);
+    border:1px solid rgba(15,108,242,0.12);
+    font-weight:600;
+  }
+
+  /* selected highlight */
+  .floor.selected {
+    outline: 3px solid rgba(15,108,242,0.12);
+    background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.0));
+  }
+
+  /* responsive */
+  @media (max-width:860px){
+    .stage{flex-direction:column;align-items:center}
+    .building-wrap{width:100%;max-width:560px}
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="building-wrap" role="region" aria-label="Edificio - selección de niveles">
+      <h3 style="margin:0 0 10px 0;color:#07306b">Torre Palma — Preventa</h3>
+      <p style="margin:0 0 12px 0;color:#355080;font-size:13px">Haz clic en un nivel para ver departamentos disponibles.</p>
+
+      <div id="building" class="building" aria-live="polite">
+        <!-- floors will be rendered here by JS -->
+      </div>
+
+      <div style="margin-top:12px; width:100%; display:flex; justify-content:space-between; gap:8px;">
+        <button class="btn" id="reserveBtn">Solicitar info</button>
+        <button class="btn secondary" id="viewPlan">Ver planos</button>
+      </div>
+    </div>
+
+    <aside class="detail" aria-label="Detalle del piso seleccionado" id="detail">
+      <div class="title" id="detailTitle">Selecciona un nivel</div>
+      <div class="subtitle">Información rápida del nivel y departamentos en venta.</div>
+
+      <div class="card" id="summaryCard">
+        <div>
+          <div style="font-weight:700;font-size:20px" id="unitsCount">-</div>
+          <div style="font-size:13px;color:#354b76">Departamentos disponibles</div>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-size:12px;color:#6a7b9a">Rango de precios</div>
+          <div style="font-weight:800;font-size:16px" id="priceRange">-</div>
+        </div>
+      </div>
+
+      <div id="aptListArea" style="display:none;flex-direction:column;gap:8px;">
+        <!-- dynamic apartments list -->
+      </div>
+
+      <div class="cta">
+        <div class="pill" id="floorLabel">—</div>
+        <div style="flex:1"></div>
+        <button class="btn secondary" id="contactBtn">Contactar asesor</button>
+        <button class="btn" id="tourBtn">Agendar visita</button>
+      </div>
+    </aside>
+  </div>
+
+<script>
+  // Datos de ejemplo: niveles y la lista de departamentos (puede venir de API)
+  const floorsData = [
+    { level: 10, priceRange: "$3,800,000 - $4,200,000", units: ["1001","1002","1003"], available: [true,false,true] },
+    { level: 9,  priceRange: "$3,600,000 - $3,950,000", units: ["901","902"], available: [true,true] },
+    { level: 8,  priceRange: "$3,500,000 - $3,900,000", units: ["801","802","803","804"], available: [false,true,true,false] },
+    { level: 7,  priceRange: "$3,300,000 - $3,650,000", units: ["701","702","703"], available: [true,true,true] },
+    { level: 6,  priceRange: "$3,100,000 - $3,450,000", units: ["601","602"], available: [true,false] },
+    { level: 5,  priceRange: "$2,900,000 - $3,200,000", units: ["501","502","503"], available: [true,true,false] },
+    { level: 4,  priceRange: "$2,600,000 - $2,900,000", units: ["401","402"], available: [true,true] },
+    { level: 3,  priceRange: "$2,300,000 - $2,600,000", units: ["301","302","303","304"], available: [true,true,true,true] },
+    { level: 2,  priceRange: "$2,000,000 - $2,300,000", units: ["201","202","203"], available: [false,true,true] },
+    { level: 1,  priceRange: "$1,800,000 - $2,100,000", units: ["101","102"], available: [true,false] }
+  ];
+
+  const buildingEl = document.getElementById('building');
+  const detailTitle = document.getElementById('detailTitle');
+  const detailLabel = document.getElementById('floorLabel');
+  const unitsCount = document.getElementById('unitsCount');
+  const priceRangeEl = document.getElementById('priceRange');
+  const aptListArea = document.getElementById('aptListArea');
+
+  let selectedFloor = null;
+
+  // Render floors (bottom-up visually, array is top->bottom so we iterate normal and CSS column-reverse flips it)
+  function renderBuilding(){
+    buildingEl.innerHTML = '';
+    floorsData.forEach((f, idx) => {
+      const floor = document.createElement('div');
+      floor.className = 'floor';
+      floor.dataset.idx = idx;
+      floor.setAttribute('role','button');
+      floor.setAttribute('aria-pressed','false');
+      floor.innerHTML = `
+        <div class="floor-left">
+          <div class="badge">Nivel ${f.level}</div>
+          <div style="font-size:11px;color:#27406b">${f.units.length} deptos</div>
+        </div>
+        <div class="units" aria-hidden="true">
+          ${f.units.map((u,i)=>`<div class="apt" title="Depto ${u}">${u}</div>`).join('')}
+        </div>
+        <div style="width:14px;display:flex;align-items:center;justify-content:center;margin-left:8px;">
+          <div class="floor-meta" title="Click para ver detalles"></div>
+        </div>
+      `;
+      floor.addEventListener('click', ()=>onFloorClick(idx));
+      buildingEl.appendChild(floor);
+    });
+  }
+
+  function onFloorClick(idx){
+    // deselect previous
+    const prev = buildingEl.querySelector('.floor.selected');
+    if(prev) prev.classList.remove('selected');
+
+    const el = buildingEl.querySelector(`.floor[data-idx='${idx}']`);
+    el.classList.add('selected');
+
+    selectedFloor = floorsData[idx];
+    updateDetail(selectedFloor);
+  }
+
+  function updateDetail(f){
+    detailTitle.textContent = `Nivel ${f.level} — Detalle`;
+    detailLabel.textContent = `Nivel ${f.level}`;
+    unitsCount.textContent = f.units.filter((_,i)=>f.available[i]).length + " / " + f.units.length;
+    priceRangeEl.textContent = f.priceRange;
+
+    // list apartments
+    aptListArea.style.display = 'flex';
+    aptListArea.innerHTML = '';
+    f.units.forEach((u,i)=>{
+      const item = document.createElement('div');
+      item.className = 'card';
+      item.style.justifyContent = 'space-between';
+      item.innerHTML = `
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="width:46px;height:34px;border-radius:6px;background:white;display:flex;align-items:center;justify-content:center;font-weight:700">${u}</div>
+          <div>
+            <div style="font-weight:700">Departamento ${u}</div>
+            <div style="font-size:12px;color:#567">Superficie: 80 m² · 2 recámaras</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-weight:800">${f.available[i] ? 'Disponible' : 'Vendido'}</div>
+          <div style="font-size:13px;color:#6b7b98">${f.available[i] ? f.priceRange.split(' - ')[0] : ''}</div>
+        </div>
+      `;
+      aptListArea.appendChild(item);
+    });
+  }
+
+  // initial render
+  renderBuilding();
+
+  // Extras: botones de ejemplo
+  document.getElementById('reserveBtn').addEventListener('click', ()=>{
+    if(!selectedFloor) return alert('Selecciona un nivel primero.');
+    alert(`Solicitud enviada para Nivel ${selectedFloor.level}. Un asesor te contactará.`);
+  });
+  document.getElementById('tourBtn').addEventListener('click', ()=>{
+    if(!selectedFloor) return alert('Selecciona un nivel primero.');
+    alert(`Visita agendada. Revisa tu correo para detalles.`);
+  });
+  document.getElementById('viewPlan').addEventListener('click', ()=>{
+    window.open('https://example.com/planos','_blank');
+  });
+
+</script>
+</body>
+</html>
