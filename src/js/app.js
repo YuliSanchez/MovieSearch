@@ -49,8 +49,49 @@ async function loadMovies(){
   url.searchParams.append("page", currentPage);
   url.searchParams.append("limit", pageSize);
   const res = await fetch(url);
-  const result = await res.json();
   //rendermovies
-  
+  const moviesresult = await res.json();
+  console.log(moviesresult);
+  //rendermovies
+  let renderMoviesList = document.getElementById("movies-list");
+    renderMoviesList.innerHTML = "";
+    moviesresult.data.forEach((movie) => {
+      const movieList = document.createElement("div");
+        movieList.className = "col-sm-6 col-md-4 col-lg-3";
+        movieList.innerHTML = `<div class="card movie-card">
+          <img src="${movie.image}"class="card-img-top" alt="Póster película"/>
+          <div class="card-body">
+          <h5 class="card-title">${movie.title}</h5>
+              <p class="card-text">
+                Año: ${movie.year}<br />
+                Director:${movie.director}
+              </p>
+              <a href="#" class="btn btn-sm btn-primary">Ver más</a>
+            </div>
+          </div>`;
+        renderMoviesList.appendChild(movieList);
+    console.log(movie.title)});
   //set pagination
+  paintPagination(moviesresult.page,moviesresult.totalPages); 
+  //console.log(moviesresult.page);
 }
+
+function paintPagination(page, totalPages) {
+  let pagination = document.getElementById("pagination");
+  pagination.className = "pagination justify-content-center";
+  pagination.innerHTML = ""
+  let pageAnterior = document.createElement("li");
+  pageAnterior.className = "page-item disabled";
+  pageAnterior.innerHTML = `<a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>`;
+  pagination.appendChild(pageAnterior);
+  for (let i = 1; i <= totalPages; i++) {
+    let npaginas = document.createElement("li");
+    npaginas.className = "page-item";
+    npaginas.innerHTML = `<a class="page-link" href="#">${i}</a>`
+    pagination.appendChild(npaginas);
+   }
+  let pageSiguiente = document.createElement("li");
+  pageSiguiente.className = "page-item";
+  pageSiguiente.innerHTML = `<a class="page-link" href="#">Siguiente</a>`;
+  pagination.appendChild(pageSiguiente);
+  }
