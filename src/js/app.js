@@ -105,7 +105,7 @@ async function loadMovies() {
                 Año: ${movie.year}<br />
                 Director:${movie.director}
               </p>
-              <a href="#" class="btn btn-sm btn-primary">Ver más</a>
+              <a href="movie-detail.html?movieid=${movie.id}" class="btn btn-sm btn-primary">Ver más</a>
             </div>
           </div>`;
         renderMoviesList.appendChild(movieList);
@@ -160,4 +160,8 @@ function paintPagination() {
     }
   });
   pagination.appendChild(pageSiguiente);
+}
+
+function buildMovieDetailLink(){
+
 }
