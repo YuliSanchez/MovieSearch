@@ -10,12 +10,14 @@ let totalPages = 0;
 let totalmovies = 0;
 let searchToken = "";
 let selectedGenre = "";
+let contador=0;
+
 // Tu propio código JS
 document.addEventListener("DOMContentLoaded", async () => {
   let title = "hola mundo";
+  buildMovieDetailLink();
   await getGenderMovie();
   await loadMovies();
-
   document
     .querySelector("#search-movies-btn")
     .addEventListener("click", loadMovies);
@@ -25,8 +27,9 @@ function setDebugInfo() {
   let debugElement = document.querySelector(".debug-info");
   debugElement.innerHTML = "";
   let debugInfo = `<p>totalmovies: ${totalmovies} | currentPage: ${currentPage} | totalPages: ${totalPages} | pageSize: ${pageSize}</p>
-                    <p>searchToken: ${searchToken} | selectedGenre: ${selectedGenre}</p>`;
+                    <p>searchToken: ${searchToken} | selectedGenre: ${selectedGenre} | Contador: ${contador} </p>`;
   debugElement.innerHTML = debugInfo;
+  
 }
 
 async function getGenderMovie() {
@@ -162,6 +165,29 @@ function paintPagination() {
   pagination.appendChild(pageSiguiente);
 }
 
-function buildMovieDetailLink(){
-
+function buildMovieDetailLink(){ 
+let boton = document.createElement("button");
+boton.className="btn btn-primary"
+boton.addEventListener("click",()=>{
+contador=contador+1; 
+boton.innerText="Número de Clicks:"+contador;
+setDebugInfo();
+if(contador==5){
+  boton.innerText=`Número de Clicks:${contador} pintar bordes en rojo de las tarjetas`;
+  let cards=document.querySelectorAll(".movie-card");
+  cards.forEach((card)=>{
+    card.className="border border-danger";
+  });
+  console.log(cards);
+} else {
+  let cards=document.querySelectorAll(".movie-card");
+  cards.forEach((card)=>{
+    card.className="border border-primary";
+  });
+  console.log(cards);
+}
+});
+let debugDiv = document.querySelector(".debug-info2");
+boton.innerText="Número de Clicks:"+contador;
+debugDiv.appendChild(boton);
 }

@@ -29,6 +29,20 @@ app.get("/api/gendermoviecatalog", (req, res) => {
   res.json(generosUnicos);
 });
 
+app.get("/api/moviedetails", (req, res) => {
+  let {id=0} = req.query;
+
+  id = parseInt(id)
+
+  const movie = moviesdb.find(m => m.id === id);
+
+  if (movie) {
+    res.json(movie);
+  } else {
+    res.status(404).json({ message: "Película no encontrada" });
+  }
+});
+
 app.get("/api/movies", (req, res) => {
   try {
     // ... lógica
